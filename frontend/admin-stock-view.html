@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Stock View</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;}
+body {background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; min-height:100vh; display:flex; flex-direction:row;}
+/* Sidebar */
+.sidebar {
+    width: 280px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+    padding: 30px 0; height: 100vh; position: fixed; left:0; top:0; z-index:200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1); border-right:1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+}
+.sidebar h2 {text-align:center; margin-bottom:40px; font-size:1.8rem; font-weight:700;
+    background:linear-gradient(135deg,#fff,#e2e8f0); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; border-bottom:1px solid rgba(255,255,255,0.2);}
+.sidebar ul {list-style:none; padding:0 20px;}
+.sidebar li {margin-bottom:12px; border-radius:12px; overflow:hidden; transition:0.3s;}
+.sidebar li:hover {background: rgba(255,255,255,0.1);}
+.sidebar a {color: rgba(255,255,255,0.9); text-decoration:none; display:flex; align-items:center; gap:12px; padding:15px 20px; border-radius:12px; transition:0.3s;}
+.sidebar a.active {background: rgba(255,255,255,0.2); color:white; box-shadow:0 4px 15px rgba(255,255,255,0.1);}
+.menu-toggle {display:none; position:fixed; top:20px; left:20px; background:rgba(255,255,255,0.2); border:none; padding:10px 14px; border-radius:10px; cursor:pointer; z-index:300;}
+
+/* Main Content */
+.main-content {flex:1; margin-left:280px; padding:40px; display:flex; flex-direction:column; align-items:center; transition:margin-left 0.3s;}
+.page-title {text-align:center; margin-bottom:40px; font-size:2.5rem; font-weight:800; background:linear-gradient(135deg,#fff,#e2e8f0); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:0 4px 8px rgba(0,0,0,0.1);}
+.action-buttons {display:flex; gap:16px; margin-bottom:40px; justify-content:center; flex-wrap:wrap; width:100%; max-width:1000px;}
+.action-button {background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color:white; border:1px solid rgba(255,255,255,0.2); padding:16px 32px; border-radius:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:1rem; transition:0.3s;}
+.action-button:hover {transform: translateY(-5px); background: rgba(255,255,255,0.25);}
+
+/* Dashboard Cards */
+.dashboard-cards {display:grid; grid-template-columns:repeat(3,1fr); gap:30px; margin-bottom:40px; max-width:1000px; width:100%;}
+.dashboard-card {background: rgba(255,255,255,0.15); backdrop-filter:blur(12px); padding:30px; border-radius:24px; text-align:center; transition:0.4s; position:relative; overflow:hidden;}
+.dashboard-card:hover {transform: translateY(-10px) scale(1.02);}
+.dashboard-icon {width:80px; height:80px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px; background: rgba(255,255,255,0.2); transition:0.4s;}
+.dashboard-card:hover .dashboard-icon {transform: scale(1.1) rotate(5deg); background: rgba(255,255,255,0.3);}
+.dashboard-card h2 {margin-bottom:15px; font-size:1.3rem; font-weight:600; color: rgba(255,255,255,0.9);}
+.dashboard-value {font-size:2.5rem; font-weight:800; color:white;}
+.success {color:#6bcf7f !important;}
+.danger {color:#ff6b6b !important;}
+.warning {color:#ffd93d !important;}
+
+/* Table */
+.table-container {background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border-radius:24px; padding:30px; max-width:1000px; width:100%; margin-bottom:30px;}
+.table-container h2 {text-align:center; margin-bottom:20px;}
+.controls-container {display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:20px;}
+.search-box {display:flex; align-items:center; gap:12px; background: rgba(255,255,255,0.1); padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.2);}
+.search-box input {background:transparent; border:none; color:white; font-size:1rem; outline:none; width:300px;}
+.search-box input::placeholder {color: rgba(255,255,255,0.6);}
+.filter-controls {display:flex; gap:15px; align-items:center;}
+.filter-select {background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:12px 20px; border-radius:12px; font-size:1rem; cursor:pointer;}
+.filter-select option {background:#4a5568; color:white;}
+.medicine-table {width:100%; border-collapse:collapse; margin-top:20px;}
+.medicine-table th, .medicine-table td {padding:16px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.1);}
+.medicine-table th {background: rgba(255,255,255,0.15); color:white; font-weight:600; font-size:0.9rem;}
+.medicine-table tr:hover {background: rgba(255,255,255,0.1);}
+.status-badge {padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.85rem;}
+.status-in-stock {background: rgba(107,207,127,0.2); color:#6bcf7f;}
+.status-low-stock {background: #ef4444; color:white;}
+.status-expiring {background: #f39c12; color:white;}
+
+/* Table Container - updated for better mobile */
+.table-container {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 20px;
+    max-width: 100%;
+    width: 100%;
+    overflow-x: auto; /* allow horizontal scroll */
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* Table */
+.medicine-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* ensure table scrolls on small screens */
+}
+
+.medicine-table th, .medicine-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sticky header */
+.medicine-table thead th {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+}
+
+/* Responsive scroll shadow */
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+}
+
+/* Responsive */
+@media(max-width:1024px){.dashboard-cards {grid-template-columns:1fr; max-width:500px;} .sidebar {width:240px;} .main-content{margin-left:240px;} .controls-container{flex-direction:column;align-items:stretch;} .search-box{width:100%;} .search-box input{width:100%;}}
+@media(max-width:768px){.sidebar{position:fixed; left:-100%; width:200px; top:0; transition:0.3s;} .sidebar.active{left:0;} .menu-toggle{display:block;} .main-content{margin-left:0; padding:20px;} .action-buttons{flex-direction:column;align-items:center;} .action-button{width:100%; max-width:300px; justify-content:center;} .medicine-table{display:block; overflow-x:auto;}}
+</style>
+</head>
+<body>
+<button class="menu-toggle"><i class="fas fa-bars"></i></button>
+<div class="sidebar" id="sidebar">
+<h2>Admin Panel</h2>
+<ul>
+<li><a href="#"><i class="fas fa-user-chart"></i> User Tracking</a></li>
+<li><a href="#"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
+<li><a href="#" class="active"><i class="fas fa-chart-line"></i> View Sales</a></li>
+<li><a href="#"><i class="fas fa-pills"></i> Add Medicine</a></li>
+<li><a href="#"><i class="fas fa-boxes"></i> View Inventory</a></li>
+<li><a href="#"><i class="fas fa-bell"></i> Notifications</a></li>
+</ul>
+</div>
+
+<div class="main-content">
+<h1 class="page-title">Stock Overview</h1>
+<div class="action-buttons">
+<button id="importInventoryBtn" class="action-button"><i class="fas fa-download"></i> Import Inventory Snapshot</button>
+</div>
+
+<div class="dashboard-cards">
+<div class="dashboard-card"><div class="dashboard-icon"><i class="fas fa-boxes"></i></div><h2>Total Items</h2><div id="totalItems" class="dashboard-value success">0</div></div>
+<div class="dashboard-card"><div class="dashboard-icon"><i class="fas fa-exclamation-triangle"></i></div><h2>Low Stock Items</h2><div id="lowStockCount" class="dashboard-value danger">0</div></div>
+<div class="dashboard-card"><div class="dashboard-icon"><i class="fas fa-calendar-times"></i></div><h2>Expiring Soon</h2><div id="expiringCount" class="dashboard-value warning">0</div></div>
+</div>
+
+<div class="table-container">
+<h2>Complete Inventory</h2>
+<div class="controls-container">
+<div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search medicines..."></div>
+<div class="filter-controls">
+<select id="stockFilter" class="filter-select">
+<option value="all">All Items</option>
+<option value="low">Low Stock</option>
+<option value="expiring">Expiring Soon</option>
+</select>
+</div>
+</div>
+<table id="medicineTable" class="medicine-table">
+<thead><tr><th>Name & Strength</th><th>Batch/Lot</th><th>Expiry</th><th>Quantity</th><th>Supplier</th><th>Price</th><th>Status</th></tr></thead>
+<tbody id="medicineTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const sidebar=document.getElementById('sidebar');
+document.querySelector('.menu-toggle').addEventListener('click',()=>{sidebar.classList.toggle('active');});
+
+// Fetch & render
+const medicineTableBody = document.getElementById('medicineTableBody');
+const totalItemsEl = document.getElementById('totalItems');
+const lowStockCountEl = document.getElementById('lowStockCount');
+const expiringCountEl = document.getElementById('expiringCount');
+
+async function fetchMedicines(){
+try{const res=await fetch('/api/medicines'); const data=await res.json(); renderTable(data); updateSummaryCards(data);}catch(err){console.error(err);}
+}
+function renderTable(medicines){medicineTableBody.innerHTML=''; medicines.forEach(med=>{const statusClass=getStatusClass(med); const row=document.createElement('tr'); row.innerHTML=`<td>${med.name} ${med.strength||''}</td><td>${med.batch||''}</td><td>${med.expiry?new Date(med.expiry).toLocaleDateString():''}</td><td>${med.quantity}</td><td>${med.supplier||''}</td><td>${med.price}</td><td><span class="status-badge ${statusClass}">${getStatusText(med)}</span></td>`; medicineTableBody.appendChild(row);});}
+function getStatusClass(med){const today=new Date(); const expiryDate=new Date(med.expiry); if(med.quantity<=5) return 'status-low-stock'; if(expiryDate-today<=7*24*60*60*1000) return 'status-expiring'; return 'status-in-stock';}
+function getStatusText(med){const today=new Date(); const expiryDate=new Date(med.expiry); if(med.quantity<=5) return 'Low Stock'; if(expiryDate-today<=7*24*60*60*1000) return 'Expiring Soon'; return 'In Stock';}
+function updateSummaryCards(medicines){const today=new Date(); totalItemsEl.textContent=medicines.length; lowStockCountEl.textContent=medicines.filter(m=>m.quantity<=5).length; expiringCountEl.textContent=medicines.filter(m=>{if(!m.expiry)return false; const expiryDate=new Date(m.expiry); return expiryDate-today<=7*24*60*60*1000;}).length;}
+
+fetchMedicines();
+
+// Search & Filter
+document.getElementById('searchInput').addEventListener('input',(e)=>{const term=e.target.value.toLowerCase(); Array.from(medicineTableBody.children).forEach(row=>{row.style.display=row.textContent.toLowerCase().includes(term)?'':'none';});});
+document.getElementById('stockFilter').addEventListener('change',(e)=>{const value=e.target.value; Array.from(medicineTableBody.children).forEach(row=>{if(value==='all'){row.style.display='';}else if(value==='low'){row.style.display=row.querySelector('.status-badge').classList.contains('status-low-stock')?'':'none';}else if(value==='expiring'){row.style.display=row.querySelector('.status-badge').classList.contains('status-expiring')?'':'none';}});});
+</script>
+</body>
+</html>

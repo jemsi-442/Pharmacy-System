@@ -1,0 +1,130 @@
+/* Responsive helpers for small screens (mobile & tablet) */
+/* Keep overrides minimal to avoid changing visual design */
+
+/* Make images and media scale */
+img, picture, video, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Utility containers */
+.container, .main-content, .medicine-list-container, .medicine-table-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tables: allow horizontal scroll on very small screens */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce large paddings on small screens */
+@media (max-width: 900px) {
+  .dashboard-card, .modal-card, .home-container {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+}
+
+/* Stack dashboard cards into single column on small screens */
+@media (max-width: 720px) {
+  .dashboard-cards, .dashboard-cards.grid, .quick-stats {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .sidebar { transform: translateY(0); }
+}
+
+/* Make buttons more tappable on mobile */
+.action-button, .import-btn, .add-medicine-btn, .medicine-action-btn, .medicine-delete-btn, .home-btn {
+  min-height: 44px;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+/* Small typography scaling */
+@media (max-width: 420px) {
+  .main-content h1, .page-title { font-size: 1.25rem; }
+  .home-container h1 { font-size: 1.4rem; }
+  .dashboard-value { font-size: 1.6rem; }
+}
+
+/* Mobile friendly table cells: allow wrapping */
+.medicine-table td, .medicine-table th { white-space: normal; word-break: break-word; }
+
+/* Ensure fixed sidebar variants don't overlap content on very small devices */
+@media (max-width: 600px) {
+  .sidebar { position: fixed; z-index: 1200; }
+  .main-content { margin-top: 64px; }
+}
+
+/* Hamburger menu styles */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1400;
+  width: 44px;
+  height: 44px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.hamburger .bar {
+  width: 22px;
+  height: 2px;
+  background: #fff;
+  display: block;
+  position: relative;
+}
+.hamburger .bar::before, .hamburger .bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+}
+.hamburger .bar::before { top: -7px; }
+.hamburger .bar::after { top: 7px; }
+
+/* Sidebar off-canvas when mobile active */
+.sidebar.offcanvas {
+  transform: translateX(-100%);
+  transition: transform 280ms ease-in-out;
+}
+.sidebar.open {
+  transform: translateX(0) !important;
+  left: 0;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1300;
+}
+.overlay.show { display: block; }
+
+@media (max-width: 600px) {
+  .hamburger { display: flex; }
+  /* Hide fixed large sidebar by default on small devices */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 280ms ease-in-out;
+    width: 260px;
+    height: 100vh;
+    top: 0;
+    left: 0;
+  }
+  .main-content { margin-left: 0; }
+}

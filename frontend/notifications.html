@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="responsive.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px 0;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0 20px;
+        }
+        
+        .sidebar li {
+            margin-bottom: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: block;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Notification Container */
+        .notification-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff);
+            background-size: 400% 400%;
+            animation: gradientShift 3s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .notification-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .notification-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        /* Notification List */
+        .notification-list {
+            list-style: none;
+            padding: 0;
+            max-width: none;
+            margin: 0;
+        }
+        
+        .notification-item {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 14px;
+            transition: all 0.22s ease;
+            border-left: 6px solid #ffd93d;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .notification-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            flex-shrink: 0;
+        }
+        
+        .notification-content {
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .notification-content strong {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.15;
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .notification-content .batch {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1rem;
+            margin-top: 4px;
+            opacity: 0.95;
+        }
+        
+        .stock-count {
+            background: rgba(255, 107, 107, 0.95);
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            padding: 8px 12px;
+            border-radius: 14px;
+            margin-left: 8px;
+            min-width: 64px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .all-good {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6bcf7f;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .all-good-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: rgba(107, 207, 127, 0.2);
+            color: #6bcf7f;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                padding: 20px;
+            }
+            
+            .notification-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .notification-icon {
+                margin: 0 auto;
+            }
+            
+            .notification-content strong {
+                font-size: 1.15rem;
+            }
+
+            .notification-content .batch {
+                font-size: 0.98rem;
+            }
+
+            .stock-count {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="sales-management.html"><i class="fas fa-cash-register"></i> Sales Management</a></li>
+            <li><a href="sales-tracking.html"><i class="fas fa-chart-line"></i> Sales Tracking</a></li>
+            <li><a href="drugs-stock-management.html"><i class="fas fa-pills"></i> Stock Management</a></li>
+            <li><a href="notifications.html" class="active"><i class="fas fa-bell"></i> Notifications</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 class="page-title">Notifications</h1>
+        
+        <div class="notification-container">
+            <div class="notification-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h2>
+            </div>
+            <ul id="notificationList" class="notification-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Get medicines from localStorage
+        function getMedicines() {
+            return JSON.parse(localStorage.getItem('medicines') || '[]');
+        }
+        
+        function renderNotifications() {
+            const medicines = getMedicines();
+            const notificationList = document.getElementById('notificationList');
+            notificationList.innerHTML = '';
+            
+            const lowStock = medicines.filter(med => parseInt(med.quantity, 10) <= 10);
+            
+            if (lowStock.length === 0) {
+                notificationList.innerHTML = `
+                    <div class="all-good">
+                        <div class="all-good-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>All items are sufficiently stocked.</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            lowStock.forEach(med => {
+                const li = document.createElement('li');
+                li.className = 'notification-item';
+                li.innerHTML = `
+                    <div class="notification-icon">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="notification-content">
+                        <strong>${med.name}</strong>
+                        <div class="batch">Batch: ${med.batch || med.strength || 'N/A'}</div>
+                    </div>
+                    <div class="stock-count">${med.quantity} left</div>
+                `;
+                notificationList.appendChild(li);
+            });
+        }
+        
+        // Initial render
+        renderNotifications();
+        
+        // Auto-refresh notifications every 10 seconds
+        setInterval(() => {
+            renderNotifications();
+        }, 10000);
+    </script>
+        <script src="responsive-nav.js"></script>
+</body>
+</html>

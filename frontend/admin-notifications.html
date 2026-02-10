@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Notifications Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="responsive.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px 0;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0 20px;
+        }
+        
+        .sidebar li {
+            margin-bottom: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: block;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .action-button {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Notification Sections */
+        .notification-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .notification-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            z-index: -1;
+        }
+        
+        .notification-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff);
+            background-size: 400% 400%;
+            animation: gradientShift 3s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .notification-section:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .lowstock .section-icon {
+            color: #ff6b6b;
+        }
+        
+        .expiry .section-icon {
+            color: #ffd93d;
+        }
+        
+        .notification-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .notification-section h2 span {
+            padding-bottom: 5px;
+            border-bottom: 3px solid;
+        }
+        
+        .lowstock h2 span {
+            border-color: #ff6b6b;
+        }
+        
+        .expiry h2 span {
+            border-color: #ffd93d;
+        }
+        
+        /* Notification List */
+        .notification-list {
+            list-style: none;
+        }
+        
+        .notification-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+            backdrop-filter: blur(5px);
+        }
+        
+        .lowstock .notification-item {
+            border-left-color: #ff6b6b;
+        }
+        
+        .expiry .notification-item {
+            border-left-color: #ffd93d;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .item-details {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .item-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .stock, .days {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .lowstock .stock {
+            color: #ff6b6b;
+        }
+        
+        .expiry .days {
+            color: #ffd93d;
+        }
+        
+        .empty {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            padding: 30px 0;
+            font-size: 1.1rem;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        
+        .lowstock-badge {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+        }
+        
+        .expiry-badge {
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            border: 1px solid rgba(255, 217, 61, 0.4);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .notification-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-button {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .notification-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .section-icon {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <ul>
+            <li><a href="admin-user-tracking.html"><i class="fas fa-user-chart"></i> User Tracking</a></li>
+            <li><a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
+            <li><a href="admin-sales-view.html"><i class="fas fa-chart-line"></i> View Sales</a></li>
+            <li><a href="admin-add-medicine.html"><i class="fas fa-pills"></i> Add Medicine</a></li>
+            <li><a href="admin-stock-view.html"><i class="fas fa-boxes"></i> View Inventory</a></li>
+            <li><a href="admin-notifications.html" class="active"><i class="fas fa-bell"></i> Notifications</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 class="page-title">Notifications Center</h1>
+        
+        <div class="action-buttons">
+            <button id="importMedicinesBtn" class="action-button">
+                <i class="fas fa-download"></i> Import Inventory Snapshot
+            </button>
+        </div>
+        
+        <div class="notification-sections">
+            <!-- Low Stock Section -->
+            <div class="notification-section lowstock">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2><span>Critical Low Stock</span></h2>
+                </div>
+                <ul class="notification-list" id="lowStockList"></ul>
+            </div>
+            
+            <!-- Expiry Alerts Section -->
+            <div class="notification-section expiry">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h2><span>Expiry Alerts</span></h2>
+                </div>
+                <ul class="notification-list" id="expiryList"></ul>
+            </div>
+        </div>
+    </div>
+
+<script>
+const TOKEN = localStorage.getItem('token'); // JWT from login
+if (!TOKEN) window.location.href = 'login.html'; // redirect if not logged in
+
+const API_URL = 'http://localhost:5000/api/medicines';
+const form = document.getElementById('addMedicineForm');
+const tableBody = document.querySelector('#medicineTable tbody');
+const successMsg = document.getElementById('addMedicineSuccess');
+const lowStockList = document.getElementById('lowStockList');
+const expiryList = document.getElementById('expiryList');
+
+// --- Helper Functions ---
+function isNearExpiry(expiryDate) {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffDays = Math.ceil((expiry - today) / (1000*60*60*24));
+    return diffDays <= 30;
+}
+
+// --- Fetch & Render ---
+async function fetchMedicines() {
+    try {
+        const res = await fetch(API_URL, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
+        if (!res.ok) throw new Error('Failed to fetch medicines');
+        const data = await res.json();
+        renderTable(data);
+        renderNotifications(data);
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+function renderTable(medicines) {
+    tableBody.innerHTML = '';
+    if(medicines.length === 0){
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,0.7)">No medicines in inventory.</td></tr>';
+        return;
+    }
+    medicines.forEach(med => {
+        tableBody.innerHTML += `
+            <tr>
+                <td>${med.name}</td>
+                <td>${med.batch || ''}</td>
+                <td>${med.quantity}</td>
+                <td>${new Date(med.expiry).toLocaleDateString()}</td>
+                <td>${med.price.toFixed(2)}</td>
+                <td>${med.supplier || ''}</td>
+                <td>${new Date(med.createdAt || med.updatedAt).toLocaleString()}</td>
+                <td>
+                    <button class="action-btn update" onclick="startUpdateMedicine('${med._id}')"><i class="fas fa-edit"></i> Update</button>
+                    <button class="action-btn delete" onclick="deleteMedicine('${med._id}')"><i class="fas fa-trash"></i> Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// --- Notifications ---
+function renderNotifications(medicines) {
+    lowStockList.innerHTML = '';
+    expiryList.innerHTML = '';
+
+    const lowStock = medicines.filter(m => parseInt(m.quantity) <= 10);
+    if(lowStock.length === 0){
+        lowStockList.innerHTML = '<li class="empty"><i class="fas fa-check-circle"></i> All items are sufficiently stocked.</li>';
+    } else {
+        lowStock.forEach(m => {
+            const li = document.createElement('li');
+            li.className = 'notification-item';
+            li.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${m.name} <span class="badge lowstock-badge"><i class="fas fa-exclamation"></i> LOW STOCK</span></div>
+                    <div class="item-details">Batch: ${m.batch || 'N/A'} | Supplier: ${m.supplier || 'N/A'}</div>
+                </div>
+                <div class="item-status"><div class="stock">${m.quantity} units</div></div>
+            `;
+            lowStockList.appendChild(li);
+        });
+    }
+
+    const expiring = medicines.filter(m => isNearExpiry(m.expiry));
+    if(expiring.length === 0){
+        expiryList.innerHTML = '<li class="empty"><i class="fas fa-check-circle"></i> No items are near expiry.</li>';
+    } else {
+        expiring.forEach(m => {
+            const days = Math.ceil((new Date(m.expiry) - new Date()) / (1000*60*60*24));
+            const li = document.createElement('li');
+            li.className = 'notification-item';
+            li.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${m.name} <span class="badge expiry-badge"><i class="fas fa-clock"></i> EXPIRING</span></div>
+                    <div class="item-details">Batch: ${m.batch || 'N/A'} | Expires: ${m.expiry.split('T')[0]}</div>
+                </div>
+                <div class="item-status"><div class="days">${days} days</div></div>
+            `;
+            expiryList.appendChild(li);
+        });
+    }
+}
+
+// --- Add medicine ---
+form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const payload = {
+        name: document.getElementById('medicineName').value.trim(),
+        batch: document.getElementById('medicineBatch').value.trim(),
+        quantity: parseInt(document.getElementById('medicineQuantity').value,10),
+        expiry: document.getElementById('medicineExpiry').value,
+        price: parseFloat(document.getElementById('medicinePrice').value),
+        supplier: document.getElementById('medicineSupplier').value.trim()
+    };
+    try {
+        const res = await fetch(API_URL, {
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            },
+            body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error('Failed to add medicine');
+        successMsg.style.display='block';
+        setTimeout(()=> successMsg.style.display='none',3000);
+        form.reset();
+        fetchMedicines();
+    } catch(err){ console.error(err); }
+});
+
+// --- Delete medicine ---
+async function deleteMedicine(id){
+    if(!confirm('Are you sure you want to delete this medicine?')) return;
+    try{
+        const res = await fetch(`${API_URL}/${id}`, {
+            method:'DELETE',
+            headers:{ 'Authorization': `Bearer ${TOKEN}` }
+        });
+        if(!res.ok) throw new Error('Failed to delete medicine');
+        fetchMedicines();
+    } catch(err){ console.error(err); }
+}
+
+// --- Update medicine ---
+async function startUpdateMedicine(id){
+    try{
+        const res = await fetch(`${API_URL}/${id}`, { headers:{ 'Authorization': `Bearer ${TOKEN}` } });
+        if(!res.ok) throw new Error('Failed to fetch medicine');
+        const med = await res.json();
+        document.getElementById('medicineName').value = med.name;
+        document.getElementById('medicineBatch').value = med.batch || '';
+        document.getElementById('medicineQuantity').value = med.quantity;
+        document.getElementById('medicineExpiry').value = med.expiry.split('T')[0];
+        document.getElementById('medicinePrice').value = med.price;
+        document.getElementById('medicineSupplier').value = med.supplier || '';
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('medicineName').value.trim(),
+                batch: document.getElementById('medicineBatch').value.trim(),
+                quantity: parseInt(document.getElementById('medicineQuantity').value,10),
+                expiry: document.getElementById('medicineExpiry').value,
+                price: parseFloat(document.getElementById('medicinePrice').value),
+                supplier: document.getElementById('medicineSupplier').value.trim()
+            };
+            try{
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method:'PUT',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'Authorization': `Bearer ${TOKEN}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) throw new Error('Failed to update medicine');
+                form.reset();
+                fetchMedicines();
+                successMsg.style.display='block';
+                setTimeout(()=> successMsg.style.display='none',3000);
+                form.onsubmit = defaultSubmit;
+            } catch(err){ console.error(err); }
+        }
+    } catch(err){ console.error(err); }
+}
+
+// Keep default submit
+const defaultSubmit = form.onsubmit;
+
+// --- Initial fetch ---
+fetchMedicines();
+</script>
+</body>
+</html>

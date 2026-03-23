@@ -1,11 +1,11 @@
-# 🏥 Pharmacy-System 
+# 🏥 Pharmacy-System INAENDELEA SOON
 
 ![Status](https://img.shields.io/badge/status-Active-success)
 ![Node.js](https://img.shields.io/badge/Node.js-16-green)
 ![MySQL](https://img.shields.io/badge/MySQL-8-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-INAENDELEA
+
 A **BACKEND Pharmacy Management System** with secure inventory tracking, sales management, and admin dashboard.  
 Designed for small to medium-sized pharmacies to efficiently manage medicines, sales, and staff operations.
 

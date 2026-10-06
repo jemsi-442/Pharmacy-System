@@ -1,70 +1,53 @@
-const User = require('../models/userModel');
+const { pool } = require('../config/db');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-// Generate Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
+const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+const publicUser = (user) => ({ _id: user.id, name: user.name, email: user.email, role: user.role });
 
-// REGISTER
 const registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
-
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+  const client = await pool.connect();
+  let inTransaction = false;
   try {
-    // Check if user exists
-    const userExist = await User.findOne({ email });
-    if (userExist) {
-      return res.status(400).json({ success: false, message: 'Email already registered' });
+    await client.query('BEGIN');
+    inTransaction = true;
+    // Allow public setup only for the first account, and serialize concurrent setup requests.
+    await client.query('SELECT pg_advisory_xact_lock(734921)');
+    const { rows: existingUsers } = await client.query('SELECT id FROM users LIMIT 1');
+    if (existingUsers.length) {
+      await client.query('ROLLBACK');
+      inTransaction = false;
+      return res.status(403).json({ success: false, message: 'Initial setup is complete. Ask an admin to create accounts.' });
     }
-
-    // Create new user
-    const user = await User.create({ name, email, password, role });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        token: generateToken(user._id),
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      }
-    });
-
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const { rows } = await client.query(
+      `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, 'admin')
+       RETURNING id, name, email, role`, [name, email, hashedPassword]
+    );
+    const user = rows[0];
+    await client.query('COMMIT');
+    inTransaction = false;
+    return res.status(201).json({ success: true, data: { token: generateToken(user.id), user: publicUser(user) } });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
+    if (inTransaction) await client.query('ROLLBACK');
+    const duplicate = error.code === '23505';
+    return res.status(duplicate ? 409 : 400).json({ success: false, message: duplicate ? 'Email already registered' : error.message });
+  } finally { client.release(); }
 };
 
-// LOGIN
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-
   try {
-
-    const user = await User.findOne({ email });
-
-    if (!user || user.password !== password) {
+    const { rows } = await pool.query('SELECT id, name, email, role, password FROM users WHERE email = $1', [email]);
+    const user = rows[0];
+    if (!user || !(await bcrypt.compare(password || '', user.password))) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        token: generateToken(user._id),
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      }
-    });
-
+    return res.json({ success: true, data: { token: generateToken(user.id), user: publicUser(user) } });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
